@@ -1,0 +1,187 @@
+USE movies
+
+--1--
+SELECT 
+title, NAME AS name
+FROM MOVIE AS m
+JOIN MOVIEEXEC AS e
+ON m.PRODUCERC#=e.CERT#
+WHERE m.PRODUCERC# = (
+  SELECT DISTINCT PRODUCERC#
+  FROM MOVIE
+  WHERE TITLE='Star Wars'
+)
+
+--2--
+SELECT 
+DISTINCT e.NAME AS name
+FROM STARSIN AS s
+JOIN MOVIE AS m
+ON m.TITLE=s.MOVIETITLE 
+JOIN MOVIEEXEC AS e
+ON e.CERT#=m.PRODUCERC#
+WHERE s.STARNAME='Harrison Ford'
+
+--3--
+SELECT
+DISTINCT(m.STUDIONAME) AS name, s.STARNAME AS starname
+FROM MOVIE AS m
+JOIN STARSIN AS s
+ON s.MOVIETITLE=m.TITLE 
+
+--4--
+SELECT
+s.STARNAME AS starname, e.NETWORTH AS netowrth, m.TITLE AS title
+FROM MOVIEEXEC AS e
+JOIN MOVIE AS m
+ON m.PRODUCERC#=e.CERT#
+JOIN STARSIN AS s
+ON s.MOVIETITLE=m.TITLE
+WHERE NETWORTH >= ALL (
+  SELECT NETWORTH
+  FROM MOVIEEXEC
+)
+
+--5--
+SELECT
+m.NAME AS name, s.MOVIETITLE AS title
+FROM STARSIN AS s
+RIGHT OUTER JOIN MOVIESTAR AS m
+ON m.NAME=s.STARNAME
+WHERE s.MOVIETITLE IS NULL
+
+
+USE pc
+
+--1--
+SELECT 
+p.maker, p.model, p.type
+FROM product AS p
+WHERE p.model NOT IN (
+  SELECT model 
+  FROM pc
+) AND p.model NOT IN (
+  SELECT model
+  FROM printer
+) AND p.model NOT IN (
+  SELECT model
+  FROM laptop
+)
+
+--2--
+SELECT
+DISTINCT a.maker
+FROM (
+  SELECT maker
+  FROM product AS p
+  JOIN laptop AS l
+  ON l.model=p.model
+) AS a
+JOIN (
+  SELECT maker
+  FROM product AS p
+  JOIN printer AS pr
+  ON pr.model=p.model
+) AS b
+ON a.maker=b.maker
+
+--3--
+SELECT
+DISTINCT l1.hd
+FROM laptop AS l1
+JOIN laptop AS l2
+ON l2.hd=l1.hd 
+WHERE l1.model NOT LIKE l2.model
+
+--4--
+SELECT *
+FROM product AS pr
+JOIN PC AS pc
+ON pc.model=pr.model
+WHERE pr.type='PC' 
+AND pc.model IS NULL
+
+
+USE ships
+
+--1--
+SELECT *
+FROM SHIPS AS s
+LEFT JOIN CLASSES AS c
+ON c.CLASS=s.CLASS
+
+--2--
+SELECT *
+FROM SHIPS AS s
+FULL JOIN CLASSES AS c
+ON c.CLASS=s.CLASS
+WHERE c.CLASS=s.CLASS
+OR c.CLASS IN (
+  SELECT NAME
+  FROM SHIPS
+)
+
+--3--
+SELECT 
+c.country, s.NAME AS name
+FROM CLASSES AS c 
+JOIN SHIPS AS s 
+ON s.CLASS=c.CLASS
+WHERE s.NAME NOT IN (
+  SELECT s.NAME
+  FROM SHIPS AS s 
+  JOIN OUTCOMES AS o
+  ON o.SHIP=s.NAME
+)
+ORDER BY c.COUNTRY, name
+
+--4--
+SELECT
+s.NAME AS [Ship Name]
+FROM SHIPS AS s
+JOIN CLASSES AS c
+ON c.CLASS=s.CLASS
+WHERE s.LAUNCHED = '1916'
+AND c.NUMGUNS >= 7
+
+--5--
+SELECT
+s.NAME AS ship, o.BATTLE AS battle, b.DATE AS date
+FROM OUTCOMES AS o
+JOIN SHIPS AS s
+ON s.NAME=o.SHIP
+JOIN BATTLES AS b
+ON b.NAME=o.BATTLE
+WHERE o.RESULT='sunk'
+ORDER BY battle
+
+--6--
+SELECT
+s.NAME AS name, c.DISPLACEMENT AS displacement, s.LAUNCHED AS launched
+FROM CLASSES AS c
+LEFT JOIN SHIPS AS s
+ON s.CLASS=c.CLASS
+WHERE s.NAME=s.CLASS
+
+--7--
+SELECT *
+FROM CLASSES AS c
+WHERE CLASS NOT IN (
+  SELECT CLASS
+  FROM SHIPS
+)
+
+--8--
+SELECT
+  s.NAME AS name,
+  c.DISPLACEMENT AS displacement,
+  c.NUMGUNS AS numguns,
+  o.RESULT AS result
+FROM SHIPS AS s
+JOIN CLASSES AS c
+ON c.CLASS=s.CLASS
+JOIN OUTCOMES AS o
+ON o.SHIP=s.NAME
+JOIN BATTLES AS b
+ON b.NAME=o.BATTLE
+WHERE b.NAME='North Atlantic'
